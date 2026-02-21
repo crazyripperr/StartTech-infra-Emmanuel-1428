@@ -1,0 +1,93 @@
+# .github/workflows/infrastructure-deploy.yml
+#
+# BEGINNER EXPLANATION:
+# This pipeline runs whenever you push changes to the terraform/ folder.
+# It automatically applies your infrastructure changes to AWS.
+# Think of it as: "code change → AWS updates itself"
+#
+# HOW SECRETS WORK:
+# Never put passwords in code! Instead, go to your GitHub repo →
+# Settings → Secrets and variables → Actions → New repository secret
+# Add: AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY, TF_VAR_mongo_uri, TF_VAR_key_name
+
+name: 🏗️ Deploy Infrastructure
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+  pull_request:
+    branches: [main]
+    paths:
+      - 'terraform/**'
+  workflow_dispatch: # Allows manual trigger from GitHub UI
+
+env:
+  TF_VERSION: "1.6.0"
+  AWS_REGION: "us-east-1"
+
+jobs:
+  terraform:
+    name: Terraform Plan & Apply
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: terraform
+
+    steps:
+      # Step 1: Download the code
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up AWS credentials from GitHub Secrets
+      - name: 🔐 Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      # Step 3: Install Terraform
+      - name: ⚙️ Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: ${{ env.TF_VERSION }}
+
+      # Step 4: Download required Terraform providers (like npm install)
+      - name: 🔄 Terraform Init
+        run: terraform init
+
+      # Step 5: Check code formatting
+      - name: 🎨 Terraform Format Check
+        run: terraform fmt -check
+        continue-on-error: true
+
+      # Step 6: Validate the configuration is valid
+      - name: ✅ Terraform Validate
+        run: terraform validate
+
+      # Step 7: Preview what changes will be made (doesn't actually do anything yet)
+      - name: 📋 Terraform Plan
+        run: |
+          terraform plan \
+            -var="mongo_uri=${{ secrets.TF_VAR_MONGO_URI }}" \
+            -var="key_name=${{ secrets.TF_VAR_KEY_NAME }}" \
+            -out=tfplan
+        env:
+          TF_VAR_mongo_uri: ${{ secrets.TF_VAR_MONGO_URI }}
+
+      # Step 8: Actually apply changes — only on pushes to main (not PRs)
+      - name: 🚀 Terraform Apply
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: terraform apply tfplan
+
+      # Step 9: Save the output values (like ALB DNS, CloudFront URL)
+      - name: 📤 Export Terraform Outputs
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: |
+          echo "ALB_DNS=$(terraform output -raw alb_dns_name)" >> $GITHUB_ENV
+          echo "CF_DOMAIN=$(terraform output -raw cloudfront_domain)" >> $GITHUB_ENV
+          echo "S3_BUCKET=$(terraform output -raw s3_bucket_name)" >> $GITHUB_ENV
+          echo "CF_DIST_ID=$(terraform output -raw cloudfront_distribution_id)" >> $GITHUB_ENV

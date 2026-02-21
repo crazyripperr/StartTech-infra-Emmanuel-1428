@@ -1,0 +1,66 @@
+# ─── TERRAFORM ────────────────────────────────────────────────────────────────
+# Local .terraform directory (downloaded providers — very large, no need to commit)
+.terraform/
+.terraform.lock.hcl
+
+# Terraform state files — NEVER commit these, they contain secrets!
+*.tfstate
+*.tfstate.*
+*.tfstate.backup
+
+
+# Terraform plan output
+tfplan
+*.tfplan
+
+# Your personal variable values — contains passwords and secrets!
+terraform.tfvars
+
+# Crash logs
+crash.log
+crash.*.log
+
+# Override files (local overrides, not for sharing)
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
+
+# ─── AWS ──────────────────────────────────────────────────────────────────────
+# AWS credentials — should NEVER be in any repo
+.aws/
+credentials
+
+# SSH keys — keep these private
+*.pem
+*.ppk
+id_rsa
+id_rsa.pub
+
+# ─── SECRETS / ENV FILES ──────────────────────────────────────────────────────
+.env
+.env.*
+*.secret
+secrets.yml
+secrets.json
+terraform.tfvars.example
+
+# ─── OS FILES ─────────────────────────────────────────────────────────────────
+# Mac
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Linux
+*~
+
+# ─── EDITOR FILES ─────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo
