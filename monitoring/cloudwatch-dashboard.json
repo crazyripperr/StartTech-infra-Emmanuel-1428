@@ -1,0 +1,70 @@
+{
+  "widgets": [
+    {
+      "type": "metric",
+      "x": 0, "y": 0, "width": 12, "height": 6,
+      "properties": {
+        "title": "Backend CPU Utilization",
+        "metrics": [
+          ["AWS/EC2", "CPUUtilization", "AutoScalingGroupName", "starttech-asg",
+           {"stat": "Average", "period": 300, "color": "#2196F3"}]
+        ],
+        "view": "timeSeries",
+        "yAxis": {"left": {"min": 0, "max": 100}},
+        "annotations": {
+          "horizontal": [{"value": 80, "label": "Scale-up threshold", "color": "#FF5722"}]
+        }
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12, "y": 0, "width": 12, "height": 6,
+      "properties": {
+        "title": "ALB Request Count & 5xx Errors",
+        "metrics": [
+          ["AWS/ApplicationELB", "RequestCount", "LoadBalancer", "starttech-alb",
+           {"stat": "Sum", "period": 60, "color": "#4CAF50", "label": "Total Requests"}],
+          ["AWS/ApplicationELB", "HTTPCode_ELB_5XX_Count", "LoadBalancer", "starttech-alb",
+           {"stat": "Sum", "period": 60, "color": "#F44336", "label": "5xx Errors"}]
+        ],
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 0, "y": 6, "width": 12, "height": 6,
+      "properties": {
+        "title": "ALB Response Time (ms)",
+        "metrics": [
+          ["AWS/ApplicationELB", "TargetResponseTime", "LoadBalancer", "starttech-alb",
+           {"stat": "Average", "period": 60, "color": "#9C27B0"}]
+        ],
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "metric",
+      "x": 12, "y": 6, "width": 12, "height": 6,
+      "properties": {
+        "title": "ElastiCache Redis — Cache Hit Rate",
+        "metrics": [
+          ["AWS/ElastiCache", "CacheHits", "CacheClusterId", "starttech-redis",
+           {"stat": "Sum", "period": 300, "color": "#4CAF50", "label": "Hits"}],
+          ["AWS/ElastiCache", "CacheMisses", "CacheClusterId", "starttech-redis",
+           {"stat": "Sum", "period": 300, "color": "#FF9800", "label": "Misses"}]
+        ],
+        "view": "timeSeries"
+      }
+    },
+    {
+      "type": "log",
+      "x": 0, "y": 12, "width": 24, "height": 6,
+      "properties": {
+        "title": "Recent Backend Errors",
+        "query": "SOURCE '/starttech/backend' | fields @timestamp, @message | filter @message like /ERROR/ | sort @timestamp desc | limit 50",
+        "region": "us-east-1",
+        "view": "table"
+      }
+    }
+  ]
+}

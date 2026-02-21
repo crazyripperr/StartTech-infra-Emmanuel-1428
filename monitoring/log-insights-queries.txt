@@ -1,0 +1,29 @@
+# log-insights-queries.txt
+# Paste these into AWS CloudWatch → Log Insights to analyse your logs.
+# Select the log group "/starttech/backend" and pick a time range.
+
+# ── Find all ERROR logs ────────────────────────────────────────────────────────
+fields @timestamp, @message
+| filter @message like /ERROR/
+| sort @timestamp desc
+| limit 100
+
+# ── Count requests per endpoint (top routes) ──────────────────────────────────
+fields @message
+| parse @message "* * *" as method, path, status
+| stats count() as requests by path
+| sort requests desc
+| limit 20
+
+# ── Find slow requests (over 1 second) ────────────────────────────────────────
+fields @timestamp, @message
+| parse @message "duration_ms=*" as duration
+| filter duration > 1000
+| sort duration desc
+| limit 50
+
+# ── Count errors over time (errors per minute) ────────────────────────────────
+fields @timestamp, @message
+| filter @message like /ERROR/
+| stats count() as errors by bin(1m)
+| sort @timestamp desc

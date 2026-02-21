@@ -1,0 +1,11 @@
+# Copy this file to terraform.tfvars and fill in your real values.
+# NEVER commit terraform.tfvars to Git — it contains secrets!
+
+aws_region    = "us-east-1"
+project       = "starttech"
+environment   = "prod"
+vpc_cidr      = "10.0.0.0/16"
+instance_type = "t3.micro"
+key_name      = "YOUR_EC2_KEY_PAIR_NAME"   # The .pem key you downloaded from AWS
+ami_id        = "ami-0c7217cdde317cfec"     # Ubuntu 22.04 LTS — us-east-1
+mongo_uri     = "mongodb+srv://starttech-user:Q5RJCCGOiExsQ1ea@starttech-cluster.nrhqrck.mongodb.net/starttech?appName=starttech-cluster"
